@@ -435,19 +435,20 @@ class GroupUrlRuleTest extends TestCase
 
     /**
      * @dataProvider createUrlDataProvider
-     * @param array $ruleConfig
+     * @param array $config
      * @param array $tests
      */
-    public function testCreateUrl($ruleConfig, $tests)
+    public function testCreateUrl($config, $tests)
     {
         $this->mockWebApplication();
         Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
-
-        $rule = new GroupUrlRule($ruleConfig);
+        $manager = new UrlManager(['cache' => null]);
+        $rule = new GroupUrlRule($config);
 
         foreach ($tests as $test) {
             list($params, $expected) = $test;
             $route = array_shift($params);
+            
             $this->assertEquals($expected, $rule->createUrl($manager, $route, $params));
         }
     }
@@ -552,17 +553,16 @@ class GroupUrlRuleTest extends TestCase
      */
     public function testGetCreateUrlStatus($config, $tests)
     {
+        $this->mockWebApplication();
+        Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
+        $manager = new UrlManager(['cache' => null]);
+
+        $rule = new GroupUrlRule($config);
+
         foreach ($tests as $test) {
             list($params, $expected, $status) = $test;
-
-            $this->mockWebApplication();
-            Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
             $route = array_shift($params);
 
-            $manager = new UrlManager([
-                'cache' => null,
-            ]);
-            $rule = new GroupUrlRule($config);
             $errorMessage = 'Failed test: ' . VarDumper::dumpAsString($test);
             $this->assertSame($expected, $rule->createUrl($manager, $route, $params), $errorMessage);
             $this->assertNotNull($status, $errorMessage);
