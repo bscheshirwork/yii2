@@ -435,13 +435,11 @@ class GroupUrlRuleTest extends TestCase
 
     /**
      * @dataProvider createUrlDataProvider
-     * @param array $rule
+     * @param array $ruleConfig
      * @param array $tests
      */
-    public function testCreateUrl($rule, $tests)
+    public function testCreateUrl($ruleConfig, $tests)
     {
-        list($params, $expected) = $test;
-
         $this->mockWebApplication();
         Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
         $route = array_shift($params);
@@ -450,8 +448,10 @@ class GroupUrlRuleTest extends TestCase
             'cache' => null,
         ]);
 
-        $rule = new GroupUrlRule($rule);
+        $rule = new GroupUrlRule($ruleConfig);
+
         foreach ($tests as $test) {
+            list($params, $expected) = $test;
             $this->assertEquals($expected, $rule->createUrl($manager, $route, $params));
         }
     }
