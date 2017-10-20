@@ -440,18 +440,18 @@ class GroupUrlRuleTest extends TestCase
      */
     public function testCreateUrl($rule, $tests)
     {
+        list($params, $expected) = $test;
+
+        $this->mockWebApplication();
+        Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
+        $route = array_shift($params);
+
+        $manager = new UrlManager([
+            'cache' => null,
+        ]);
+
+        $rule = new GroupUrlRule($rule);
         foreach ($tests as $test) {
-            list($params, $expected) = $test;
-
-            $this->mockWebApplication();
-            Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
-            $route = array_shift($params);
-
-            $manager = new UrlManager([
-                'cache' => null,
-            ]);
-            var_dump($rule);
-            $rule = new GroupUrlRule($rule);
             $this->assertEquals($expected, $rule->createUrl($manager, $route, $params));
         }
     }
