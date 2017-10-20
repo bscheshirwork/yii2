@@ -442,16 +442,12 @@ class GroupUrlRuleTest extends TestCase
     {
         $this->mockWebApplication();
         Yii::$app->set('request', new Request(['hostInfo' => 'http://api.example.com', 'scriptUrl' => '/index.php']));
-        $route = array_shift($params);
-
-        $manager = new UrlManager([
-            'cache' => null,
-        ]);
 
         $rule = new GroupUrlRule($ruleConfig);
 
         foreach ($tests as $test) {
             list($params, $expected) = $test;
+            $route = array_shift($params);
             $this->assertEquals($expected, $rule->createUrl($manager, $route, $params));
         }
     }
