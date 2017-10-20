@@ -450,6 +450,7 @@ class GroupUrlRuleTest extends TestCase
             $manager = new UrlManager([
                 'cache' => null,
             ]);
+            var_dump($rule);
             $rule = new GroupUrlRule($rule);
             $this->assertEquals($expected, $rule->createUrl($manager, $route, $params));
         }
