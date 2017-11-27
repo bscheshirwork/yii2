@@ -287,11 +287,11 @@ class Validator extends Component
     /**
      * Validates a given value.
      * You may use this method to validate a value out of the context of a data model.
-     * @param mixed $value the data value to be validated.
+     * @param mixed $value the data value to be validated. Will be replaced with processed data.
      * @param string $error the error message to be returned, if the validation fails.
      * @return bool whether the data is valid.
      */
-    public function validate($value, &$error = null)
+    public function validate(&$value, &$error = null)
     {
         $result = $this->validateValue($value);
         if (empty($result)) {
@@ -315,7 +315,7 @@ class Validator extends Component
     /**
      * Validates a value.
      * A validator class can implement this method to support data validation out of the context of a data model.
-     * @param mixed $value the data value to be validated.
+     * @param mixed $value the data value to be validated. Will be replaced with processed data.
      * @return array|null the error message and the array of parameters to be inserted into the error message.
      * ```php
      * if (!$valid) {
@@ -334,7 +334,7 @@ class Validator extends Component
      * Null should be returned if the data is valid.
      * @throws NotSupportedException if the validator does not supporting data validation without a model
      */
-    protected function validateValue($value)
+    protected function validateValue(&$value)
     {
         throw new NotSupportedException(get_class($this) . ' does not support validateValue().');
     }

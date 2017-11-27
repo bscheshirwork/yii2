@@ -12,9 +12,11 @@ use yii\validators\BooleanValidator;
 use yii\validators\InlineValidator;
 use yii\validators\NumberValidator;
 use yii\validators\RequiredValidator;
+use yii\validators\Validator;
 use yiiunit\data\validators\models\FakedValidationModel;
 use yiiunit\data\validators\models\ValidatorTestFunctionModel;
 use yiiunit\data\validators\TestValidator;
+use yiiunit\data\validators\TestVariableByReferenceValidator;
 use yiiunit\TestCase;
 
 /**
@@ -188,12 +190,21 @@ class ValidatorTest extends TestCase
         $this->assertFalse($val->isEmpty('  '));
     }
 
-    public function testValidateValue()
+    public function testValidateValueNotSupported()
     {
         $this->expectException('yii\base\NotSupportedException');
         $this->expectExceptionMessage(TestValidator::className() . ' does not support validateValue().');
         $val = new TestValidator();
-        $val->validate('abc');
+        $str = 'abc';
+        $val->validate($str);
+    }
+
+    public function testValidateValue()
+    {
+        $val = new TestVariableByReferenceValidator();
+        $str = 1;
+        $val->validate($str);
+        $this->assertEquals(2, $str);
     }
 
     public function testValidateAttribute()
@@ -209,6 +220,33 @@ class ValidatorTest extends TestCase
         $this->assertEquals('val_attr_a', $args[0]);
         $this->assertEquals(['foo' => 'bar'], $args[1]);
         $this->assertInstanceOf(InlineValidator::className(), $args[2]);
+    }
+
+    public function testValidateAttributeByReference()
+    {
+        $model = new FakedValidationModel();
+        $model->val_attr_a = 1;
+        $val = Validator::createValidator(TestVariableByReferenceValidator::className(), $model, ['val_attr_a']);
+        $val->validateAttribute($model, 'val_attr_a');
+
+        $this->assertEquals(2, $model->val_attr_a);
+    }
+
+    public function testValidateAttributesByReference()
+    {
+        $model = new FakedValidationModel();
+        $model->val_attr_a = 1;
+        $model->val_attr_b = 11;
+        $val = Validator::createValidator(
+            TestVariableByReferenceValidator::className(),
+            $model,
+            ['val_attr_a', 'val_attr_b', 'val_attr_c']
+        );
+        $val->validateAttributes($model, ['val_attr_a', 'val_attr_b', 'val_attr_c']);
+
+        $this->assertEquals(2, $model->val_attr_a);
+        $this->assertEquals(12, $model->val_attr_b);
+        $this->assertEquals(null, $model->val_attr_c);
     }
 
     public function testClientValidateAttribute()
