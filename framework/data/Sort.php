@@ -252,23 +252,11 @@ class Sort extends BaseObject
     {
         if ($this->_attributeOrders === null || $recalculate) {
             $this->_attributeOrders = [];
-            if (($params = $this->params) === null) {
-                $request = Yii::$app->getRequest();
-                $params = $request instanceof Request ? $request->getQueryParams() : [];
-            }
-            if (isset($params[$this->sortParam])) {
-                foreach ($this->parseSortParam($params[$this->sortParam]) as $attribute) {
-                    $descending = false;
-                    if (strncmp($attribute, '-', 1) === 0) {
-                        $descending = true;
-                        $attribute = substr($attribute, 1);
-                    }
-
-                    if (isset($this->attributes[$attribute])) {
-                        $this->_attributeOrders[$attribute] = $descending ? SORT_DESC : SORT_ASC;
-                        if (!$this->enableMultiSort) {
-                            return $this->_attributeOrders;
-                        }
+            foreach ($this->getRawAttributeOrders() as $attribute => $direction) {
+                if (isset($this->attributes[$attribute])) {
+                    $this->_attributeOrders[$attribute] = $direction;
+                    if (!$this->enableMultiSort) {
+                        return $this->_attributeOrders;
                     }
                 }
             }
@@ -278,6 +266,33 @@ class Sort extends BaseObject
         }
 
         return $this->_attributeOrders;
+    }
+
+    /**
+     * Returns the currently requested raw sort information (w/o compare to existing sort attributes).
+     * @return array sort directions indexed by attribute names.
+     * Sort direction can be either `SORT_ASC` for ascending order or
+     * `SORT_DESC` for descending order.
+     */
+    public function getRawAttributeOrders()
+    {
+        $attributeOrders = [];
+        if (($params = $this->params) === null) {
+            $request = Yii::$app->getRequest();
+            $params = $request instanceof Request ? $request->getQueryParams() : [];
+        }
+        if (isset($params[$this->sortParam])) {
+            foreach ($this->parseSortParam($params[$this->sortParam]) as $attribute) {
+                $descending = false;
+                if (strncmp($attribute, '-', 1) === 0) {
+                    $descending = true;
+                    $attribute = substr($attribute, 1);
+                }
+                $attributeOrders[$attribute] = $descending ? SORT_DESC : SORT_ASC;
+            }
+        }
+
+        return $attributeOrders;
     }
 
     /**

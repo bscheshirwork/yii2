@@ -84,6 +84,38 @@ class SortTest extends TestCase
     }
 
     /**
+     * @depends testGetRawOrders
+     */
+    public function testGetRawAttributeOrders()
+    {
+        $sort = new Sort([
+            'attributes' => [
+                'age',
+                'name' => [
+                    'asc' => ['first_name' => SORT_ASC, 'last_name' => SORT_ASC],
+                    'desc' => ['first_name' => SORT_DESC, 'last_name' => SORT_DESC],
+                ],
+            ],
+            'params' => [
+                'sort' => 'not-exist,age,-name,-another-not-exist',
+            ],
+            'enableMultiSort' => true,
+        ]);
+
+        $orders = $sort->getAttributeOrders();
+        $this->assertCount(4, $orders);
+        $this->assertEquals(SORT_ASC, $orders['not-exist']);
+        $this->assertEquals(SORT_ASC, $orders['age']);
+        $this->assertEquals(SORT_DESC, $orders['name']);
+        $this->assertEquals(SORT_DESC, $orders['-another-not-exist']);
+
+        $sort->enableMultiSort = false;
+        $orders = $sort->getAttributeOrders(true);
+        $this->assertCount(1, $orders);
+        $this->assertEquals(SORT_ASC, $orders['not-exist']);
+    }
+
+    /**
      * @depends testGetAttributeOrders
      */
     public function testGetAttributeOrder()
